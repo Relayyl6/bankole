@@ -14,6 +14,7 @@ import StatusPill from "@/components/status-pill";
 import BudgetBar from "@/components/budget-bar";
 import VerifiedBadge from "@/components/verified-badge";
 import Avatar from "@/components/avatar";
+import DraftProjectList from "@/components/draft-project-list";
 
 export default function DashboardPage() {
   const activeProjects = projects.filter((p) => p.status !== "completed");
@@ -66,6 +67,8 @@ export default function DashboardPage() {
           icon={Camera}
         />
       </div>
+
+      <DraftProjectList />
 
       <div className="mt-10">
         <h2 className="text-lg font-semibold text-ink-900">All projects</h2>
