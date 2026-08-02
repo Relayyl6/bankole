@@ -17,7 +17,7 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
-import { testimonials } from "@/lib/mock-data";
+import { surveyQuotes } from "@/lib/mock-data";
 import Avatar from "@/components/avatar";
 
 const PROBLEMS = [
@@ -467,30 +467,31 @@ export default function Home() {
         <div className="rounded-3xl bg-brand-700 text-white p-8 sm:p-12">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold text-brand-200">
-              From our diaspora user research
+              From our survey · 10 responses, August 2026
             </p>
             <h2 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-balance">
-              What diaspora senders told us was missing.
+              We asked what people fear about sending money home.
             </h2>
           </div>
           <div className="mt-10 grid gap-5 sm:grid-cols-3">
-            {testimonials.map((t) => (
+            {surveyQuotes.map((q) => (
               <div
-                key={t.name}
+                key={q.quote}
                 className="rounded-2xl bg-white/10 border border-white/10 p-5"
               >
                 <p className="text-sm text-white text-pretty">
-                  &ldquo;{t.quote}&rdquo;
+                  &ldquo;{q.quote}&rdquo;
                 </p>
-                <p className="mt-4 text-xs text-brand-200">
-                  {t.name} · {t.location}
-                </p>
+                <p className="mt-4 text-xs text-brand-200">Survey respondent</p>
               </div>
             ))}
           </div>
-          <p className="mt-6 text-xs text-brand-200">
-            Representative quotes synthesized from our early diaspora research
-            interviews, not live customer accounts.
+          <p className="mt-6 max-w-3xl text-xs text-brand-200 text-pretty">
+            Verbatim answers from ten people across Nigeria, Burkina Faso and the
+            United States, collected August 2026. Roughly a third currently live
+            abroad, so this is a directional signal from a small sample, not
+            statistically significant research. Verified agent profiles were the
+            most-requested feature, chosen by 6 of the 10.
           </p>
         </div>
       </section>

@@ -120,10 +120,8 @@ export interface ActivityItem {
   timestamp: string;
 }
 
-export interface Testimonial {
+export interface SurveyQuote {
   quote: string;
-  name: string;
-  location: string;
 }
 
 export interface DocumentRecord {
@@ -493,23 +491,20 @@ export const documents: DocumentRecord[] = [
   { id: "d4", projectId: "proj-ajah-home", name: "Building permit, Lagos State", kind: "Permit", uploadedOn: "2026-01-30" },
 ];
 
-export const testimonials: Testimonial[] = [
+// Verbatim answers from the Bankole survey (n = 10, August 2026). These are real
+// respondent words — do not edit them for polish, and do not attach names or
+// locations: the form was answered without per-quote attribution.
+export const surveyQuotes: SurveyQuote[] = [
   {
     quote:
-      "Bankole didn't just get us a builder, it gave us a paper trail. Every milestone had proof before a naira moved.",
-    name: "Dr. Emeka N.",
-    location: "London, UK",
+      "Money was sent and my friend's sibling diverted the funds for something completely ridiculous.",
+  },
+  {
+    quote: "I fear to be stolen and to break a relation because of that.",
   },
   {
     quote:
-      "The milestone photos with GPS tags meant our whole hometown association could verify progress, not just me.",
-    name: "Yaw B.",
-    location: "Toronto, Canada",
-  },
-  {
-    quote: "First time funding a build from abroad without losing sleep over it.",
-    name: "Ifeoma A.",
-    location: "Houston, USA",
+      "My biggest fear is whether the person will carry out the work and if they are trustworthy enough.",
   },
 ];
 
