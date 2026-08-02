@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+:root {
+  --background: #faf9f7;
+  --foreground: #17141f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-300: #c4b5fd;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+  --color-brand-700: #6d28d9;
+  --color-brand-800: #5b21b6;
+  --color-brand-900: #4c1d95;
+
+  --color-ink-50: #f7f7f8;
+  --color-ink-100: #eeedf1;
+  --color-ink-200: #d9d7e0;
+  --color-ink-300: #b6b2c2;
+  --color-ink-400: #8d879e;
+  --color-ink-500: #6c6580;
+  --color-ink-600: #544d66;
+  --color-ink-700: #423c52;
+  --color-ink-800: #2c2738;
+  --color-ink-900: #17141f;
+
+  --color-mint-500: #16a34a;
+  --color-mint-100: #dcfce7;
+  --color-amber-500: #d97706;
+  --color-amber-100: #fef3c7;
+  --color-rose-500: #dc2626;
+  --color-rose-100: #fee2e2;
+
+  --shadow-soft: 0 1px 2px rgba(23, 20, 31, 0.04), 0 8px 24px rgba(23, 20, 31, 0.06);
+  --shadow-soft-lg: 0 4px 12px rgba(23, 20, 31, 0.06), 0 16px 40px rgba(23, 20, 31, 0.10);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
