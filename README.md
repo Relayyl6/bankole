@@ -55,12 +55,32 @@ Data shown in the interface is illustrative and labelled as such throughout.
 | Agent profiles — credentials, portfolio, reviews | Built |
 | Sender dashboard — multi-project overview | Built |
 | Project workspace — milestone timeline, budget, proof review | Built |
-| Guided project creation flow | In progress |
+| Guided project creation flow | Built |
 | EXIF-based proof verification | In progress |
 | Authentication, messaging, notifications | Specified, not built |
 
+**Live deployment:** https://bankole-app.vercel.app — no login required.
+
 The API the remaining work depends on is fully specified in
 **[API-CONTRACT.md](API-CONTRACT.md)**.
+
+## Backend handoff
+
+Start with these two, in order:
+
+1. **[docs/SCREENS.md](docs/SCREENS.md)** — every screen, screenshotted, mapped
+   to the endpoints that feed it: what the frontend sends, what logic it
+   expects, what it needs back.
+2. **[API-CONTRACT.md](API-CONTRACT.md)** — the full spec. Request and response
+   shapes, validation rules, error format, auth model, and the exact enum values
+   the UI depends on. Tagged P0/P1/P2, with a suggested build order in §13.
+
+The frontend runs on seeded data and keeps working whether or not a backend
+exists, so nothing here is a blocker for the demo — anything that lands is
+upside.
+
+**Most valuable three endpoints:** `GET /agents`, `GET /projects/:id`,
+`POST /milestones/:id/approve`.
 
 ## Architecture
 
@@ -155,6 +175,12 @@ which is the entire point of the product.
 ```
 web/                                            Frontend application
 API-CONTRACT.md                                 API specification
-Problem_Statement_Diaspora_Infrastructure.md    Problem research
-Judging_Criteria.md                             Fellowship evaluation criteria
+docs/SCREENS.md                                 Screens mapped to endpoints
+docs/screenshots/                               Every screen, desktop + mobile
+research/SURVEY-FINDINGS.md                     User survey, n = 10
+research/Problem_Statement.md                   Problem research
+research/Diaspora-Ledger-Field-Report.pdf       Competitor field report
 ```
+
+This repository is private. The `research/` directory is internal working
+material — survey data and competitive analysis — and is not for publication.

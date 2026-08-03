@@ -46,8 +46,14 @@ Screenshot_*.jpg
 *.pdf
 New Text Document.txt
 
-# internal research and strategy — local only, never publish
-# important/ holds survey data and the competitor field report
+# internal research and strategy — local only
+# important/ holds the raw working copies plus correspondence. The material the
+# team needs is copied into research/, which IS tracked: this repo is private
+# and shared only with the backend developer. Correspondence stays out.
 important/
 Judging_Criteria.md
+
+# research/ is tracked despite the *.pdf rule above
+!research/
+!research/*.pdf
 Problem_Statement_Diaspora_Infrastructure.md
