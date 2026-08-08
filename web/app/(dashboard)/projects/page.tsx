@@ -11,20 +11,14 @@ import { type Project, ASSET_TYPE_LABEL, PROJECT_STATUS_LABEL, formatCurrency } 
 import { PROJECT_STATUS_TONE } from "@/lib/status";
 import StatusPill from "@/components/status-pill";
 import { apiClient } from "@/lib/api-client";
-import useSWR from "swr";
+import { useProjects } from "@/lib/projects";
 
 export default function ProjectsPage() {
   const { role, user } = useAuth();
-  const { data: projectsRes } = useSWR('/projects', (url) => apiClient<{data: Project[], meta: any}>(url));
-  const projects = projectsRes?.data || [];
+  const { userProjects, isLoading } = useProjects(role, user);
   
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
-
-  // For agents: only show projects assigned to them (by their real user ID)
   const isAgent = role === "agent";
-  const userProjects = isAgent 
-    ? projects.filter(p => user?.id && (p.agentId === user.id || (p as any).agent_id === user.id || p.agent?.id === user.id))
-    : projects; // sender sees all their own projects
 
   const filteredProjects = userProjects.filter(p => {
     if (filter === "active") return p.status !== "completed";

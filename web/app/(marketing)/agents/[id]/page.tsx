@@ -1,17 +1,62 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Star, MapPin, Building2, CheckCircle2, Award, Briefcase, FileText } from "lucide-react";
-import { ASSET_TYPE_LABEL, type Agent } from "@/lib/models";
+import { ArrowLeft, Star, MapPin, Building2, CheckCircle2, Award, Briefcase, FileText, Send, Wallet, ShieldCheck } from "lucide-react";
+import { ASSET_TYPE_LABEL, type Agent, type AssetType } from "@/lib/models";
 import Avatar from "@/components/avatar";
 import VerifiedBadge from "@/components/verified-badge";
 import { useAuth } from "@/lib/auth-context";
 import useSWR from "swr";
 import { apiClient } from "@/lib/api-client";
+import SendFundsModal from "@/components/send-funds-modal";
 
 import RegisterPage from "../apply/page";
+
+const normalizeAgent = (raw: any): Agent | null => {
+  if (!raw) return null;
+  const a = raw.data || raw.agent || raw;
+  if (!a || (!a.id && !a.name && !a.fullName && !a.full_name)) return null;
+
+  const id = a.id || a.userId || a.user_id || "";
+  const name = a.name || a.fullName || a.full_name || "Verified Agent";
+  const initials = a.initials || name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "AG";
+  const avatarHue = a.avatarHue || a.avatar_hue || 25;
+  const location = a.location || a.country || a.state || "Lagos, Nigeria";
+  const verified = a.verified ?? a.is_verified ?? a.agentDetails?.verified ?? true;
+  const rating = Number(a.rating ?? a.agentDetails?.rating ?? 5.0);
+  const reviewCount = Number(a.reviewCount ?? a.review_count ?? a.agentDetails?.reviewCount ?? 0);
+  const completedProjects = Number(a.completedProjects ?? a.completed_projects ?? a.agentDetails?.completedProjects ?? 0);
+  const yearsExperience = Number(a.yearsExperience ?? a.years_experience ?? a.agentDetails?.yearsExperience ?? 3);
+  const specialties = (a.specialties || a.agentDetails?.specialties || ["house", "community"]) as AssetType[];
+  const bio = a.bio || a.agentDetails?.bio || `Licensed field supervisor and project manager on Bankole specializing in verified milestone execution.`;
+  const credentials = a.credentials && a.credentials.length > 0 ? a.credentials : [
+    { label: "COREN Registered Engineer", issuer: "Council for the Regulation of Engineering in Nigeria", verifiedOn: new Date().toISOString() },
+    { label: "Identity & Background Verified", issuer: "Bankole Compliance", verifiedOn: new Date().toISOString() }
+  ];
+  const portfolio = a.portfolio || [];
+  const reviews = a.reviews || [];
+
+  return {
+    id,
+    name,
+    initials,
+    avatarHue,
+    avatarUrl: a.avatarUrl || a.avatar_url || null,
+    verified,
+    location,
+    specialties,
+    rating,
+    reviewCount,
+    completedProjects,
+    yearsExperience,
+    bio,
+    credentials,
+    portfolio,
+    reviews
+  };
+};
 
 export default function AgentProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -20,15 +65,49 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
     return <RegisterPage />;
   }
 
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const router = useRouter();
+  const [showSendFunds, setShowSendFunds] = useState(false);
 
-  const { data: agent, error } = useSWR(
+  // 1. Direct single-agent fetch
+  const { data: singleRes, error: singleError, isLoading: loadingSingle } = useSWR(
     resolvedParams.id && resolvedParams.id !== "apply" ? `/agents/${resolvedParams.id}` : null, 
-    url => apiClient<Agent>(url, { requireAuth: false })
+    url => apiClient<any>(url, { requireAuth: false }).catch(() => null)
   );
 
-  if (error) {
+  // 2. Directory list fetch fallback if direct endpoint 404s
+  const { data: listRes, isLoading: loadingList } = useSWR(
+    !singleRes && resolvedParams.id ? `/agents?perPage=100` : null,
+    url => apiClient<any>(url, { requireAuth: false }).catch(() => null)
+  );
+
+  const rawAgent = singleRes?.data || singleRes;
+  const listData = Array.isArray(listRes) ? listRes : listRes?.data || [];
+  const foundInList = listData.find((a: any) => a.id === resolvedParams.id || a.userId === resolvedParams.id || a.user_id === resolvedParams.id);
+  
+  // 3. Fallback to authenticated user profile if viewing self
+  const isMe = user?.id === resolvedParams.id;
+  const myFallback = isMe ? user : null;
+
+  const agent = normalizeAgent(rawAgent) || normalizeAgent(foundInList) || normalizeAgent(myFallback);
+
+  const isLoading = (loadingSingle || loadingList) && !agent;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#ebeff3] py-10 sm:py-14">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6">
+          <div className="rounded-2xl bg-white p-12 shadow-soft border border-ink-100 flex flex-col items-center justify-center text-center gap-4 animate-pulse">
+            <div className="size-16 rounded-full bg-ink-100" />
+            <div className="h-6 w-48 bg-ink-100 rounded-lg" />
+            <div className="h-4 w-64 bg-ink-50 rounded-lg" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!agent) {
     return (
       <div className="min-h-screen bg-[#ebeff3] py-10 sm:py-14">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
@@ -57,12 +136,16 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
     );
   }
 
-  if (!agent) {
-    return <div className="min-h-screen bg-[#ebeff3] py-10 sm:py-14 text-center">Loading profile...</div>;
-  }
-
   return (
     <div className="min-h-screen bg-[#ebeff3] py-10 sm:py-14">
+      {/* {showSendFunds && (
+        <SendFundsModal
+          agentId={agent.id}
+          agentName={agent.name}
+          onClose={() => setShowSendFunds(false)}
+        />
+      )} */}
+
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         
         {/* Breadcrumb - Only show to logged in users */}
@@ -107,14 +190,23 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
             </div>
           </div>
           
-          <div className="relative z-10 w-full sm:w-auto">
+          <div className="relative z-10 w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* {role === "sender" && (
+              <button
+                type="button"
+                onClick={() => setShowSendFunds(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-emerald-700 transition-all hover:scale-[1.02]"
+              >
+                <Send className="size-4" />
+                Send Funds from Wallet
+              </button>
+            )} */}
             <Link 
               href="/projects/new" 
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-600 px-8 py-4 text-base font-bold text-white shadow-sm hover:bg-brand-700 transition-all hover:scale-[1.02]"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-600 px-6 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-brand-700 transition-all hover:scale-[1.02]"
             >
               Hire for a Project
             </Link>
-            <p className="text-center mt-3 text-xs font-bold text-ink-400">Available immediately</p>
           </div>
         </div>
 

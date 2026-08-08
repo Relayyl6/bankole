@@ -41,6 +41,8 @@ import { newDraftId } from "@/lib/draft-projects";
 import Avatar from "@/components/avatar";
 import VerifiedBadge from "@/components/verified-badge";
 import { useNotifications } from "@/lib/notification-context";
+import { useAuth } from "@/lib/auth-context";
+import { ProjectStorage } from "@/lib/projects";
 import DynamicMapPicker from "@/components/dynamic-map-picker";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "react-toastify";
@@ -78,6 +80,7 @@ const STEPS = [
 const MIN_BUDGET = 100_000;
 
 export default function NewProjectFlow() {
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
 
   const [assetType, setAssetType] = useState<AssetType | null>(null);
@@ -217,9 +220,15 @@ export default function NewProjectFlow() {
       const payload: any = {
         name: name.trim(),
         assetType,
-        location,
+        location: {
+          label: location.label,
+          lat: location.lat,
+          lng: location.lng,
+        },
         currency: "NGN",
         totalBudget: budget,
+        supervisionFeePercentage: 10,
+        isPublic: assignmentMode === "marketplace",
         scope: scope.trim(),
         milestones: plan.map((m, index) => ({
           order: index + 1,
@@ -230,14 +239,58 @@ export default function NewProjectFlow() {
       };
 
       if (assignmentMode === "direct" && agent) {
-        payload.agentId = agent.id;
+        const resolvedAgentId = agent.id || (agent as any).userId || (agent as any).user_id || (agent as any).agentId;
+        payload.agentId = resolvedAgentId;
+        payload.agentName = agent.name;
+        payload.agent = {
+          id: resolvedAgentId,
+          name: agent.name,
+          initials: agent.initials || "AG",
+          verified: agent.verified ?? true,
+        };
         payload.supervisionFeePercentage = 10;
+        payload.isPublic = false; 
       }
 
       const response = await apiClient<{ id: string }>("/projects", {
         method: "POST",
         body: payload
       });
+
+      const projectId = response?.id || `prj_${Date.now()}`;
+      const resolvedAgentId = (assignmentMode === "direct" && agent)
+        ? (agent.id || (agent as any).userId || (agent as any).user_id || (agent as any).agentId)
+        : undefined;
+
+      const newProjectObj: Project = {
+        id: projectId,
+        name: name.trim(),
+        assetType: assetType!,
+        location: location!,
+        currency: "NGN",
+        totalBudget: budget,
+        fundsInEscrow: budget,
+        fundsReleased: 0,
+        supervisionFeePercentage: 10,
+        supervisionFeeTotal: Math.round(budget * 0.1),
+        currentStage: plan[0]?.stage || "Phase 1 Mobilization",
+        status: assignmentMode === "marketplace" ? "agent_unassigned" : "on_track",
+        milestoneCount: plan.length,
+        milestonesReleased: 0,
+        startedOn: new Date().toISOString().slice(0, 10),
+        scope: scope.trim(),
+        isOpenForBids: assignmentMode === "marketplace",
+        agentId: resolvedAgentId,
+        agentName: (assignmentMode === "direct" && agent) ? agent.name : undefined,
+        agent: (assignmentMode === "direct" && agent) ? {
+          id: resolvedAgentId || "",
+          name: agent.name,
+          initials: agent.initials || "AG",
+          verified: agent.verified ?? true,
+        } : undefined,
+      };
+
+      ProjectStorage.saveCreatedProject(newProjectObj);
 
       if (assignmentMode === "marketplace") {
         addNotification({
@@ -253,9 +306,15 @@ export default function NewProjectFlow() {
           type: "success",
           targetRole: "sender",
         });
+        addNotification({
+          title: "New Project Assigned 🏗️",
+          desc: `You have been assigned as supervising agent for "${name}" by ${user?.fullName || "a diaspora sender"}.`,
+          type: "info",
+          targetRole: "agent",
+        });
       }
 
-      setCreatedId(response.id);
+      setCreatedId(projectId);
     } catch (err: any) {
       toast.error(err.message || "Failed to create project");
     }
@@ -794,7 +853,7 @@ export default function NewProjectFlow() {
 
       {/* Agent Selection Modal */}
       {isAgentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-ink-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 pt-10 sm:pt-14 md:pt-16 overflow-y-auto bg-ink-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-6 border-b border-ink-100 flex items-center justify-between bg-white">
               <div>

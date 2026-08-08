@@ -20,6 +20,7 @@ import {
   type ProjectBid 
 } from "@/lib/models";
 import { toast } from "react-toastify";
+import { ProjectStorage } from "@/lib/projects";
 
 // Local storage key for fallback persisted bids
 const BIDS_STORAGE_KEY = "bankole_marketplace_bids";
@@ -31,9 +32,9 @@ export default function MarketplacePage() {
 
   // Data fetching
   const { data: projectsRes, mutate: mutateProjects } = useSWR("/projects?includeMarketplace=true", (url) => 
-    apiClient<{ data: Project[] }>(url)
+    apiClient<{ data: Project[] }>(url).catch(() => ({ data: [] }))
   );
-  const allProjects = projectsRes?.data || [];
+  const allProjects = ProjectStorage.getMergedProjects(projectsRes?.data || []);
 
   // Only show projects that are genuinely public/unassigned marketplace listings.
   // A project is on the marketplace ONLY if it has no assigned agent AND is explicitly marked public.
@@ -409,7 +410,7 @@ export default function MarketplacePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 sm:pt-14 md:pt-16 overflow-y-auto bg-black/60 backdrop-blur-sm"
             onClick={() => setActiveProjectForBid(null)}
           >
             <motion.div

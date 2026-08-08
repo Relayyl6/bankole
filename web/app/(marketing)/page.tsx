@@ -3,6 +3,7 @@ import Image from "next/image";
 import AnimatedSection from "@/components/animated-section";
 import EscrowSteps from "@/components/escrow-steps";
 import SurveyCharts from "@/components/survey-charts";
+import LandingHero from "@/components/landing-hero";
 import {
   Activity,
   ArrowRight,
@@ -124,102 +125,8 @@ const REVENUE = [
 export default function Home() {
   return (
     <div className="pb-20">
-      {/* Hero */}
-      <section className="px-4 sm:px-6 pt-6 pb-12 sm:pb-20">
-        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-md lg:rounded-[2.5rem] bg-white px-6 pt-12 pb-8 sm:px-16 sm:pt-16 sm:pb-10 lg:px-20 lg:pt-20 lg:pb-12 shadow-soft-lg min-h-[600px] lg:min-h-[700px] flex flex-col border border-ink-100">
-          
-          {/* Big Background Text */}
-          <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center pointer-events-none select-none z-0">
-            <h1 className="text-[15vw] sm:text-[10rem] md:text-[12rem] lg:text-[15rem] font-bold text-ink-900/[0.03] leading-none tracking-tighter whitespace-nowrap">
-              BANKOLE
-            </h1>
-          </div>
-
-          {/* Central Image */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[90%] sm:max-w-lg lg:max-w-2xl aspect-[4/5] sm:aspect-square lg:aspect-[4/3] z-10 pointer-events-none opacity-40 sm:opacity-80 lg:opacity-100">
-             <div className="relative w-full h-full rounded-md overflow-hidden shadow-2xl">
-                <Image 
-                  src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1600"
-                  alt="Modern Home"
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-white/80 sm:from-white/60 via-transparent to-transparent" />
-             </div>
-          </div>
-
-          {/* Content overlaying the image */}
-          <div className="relative z-20 w-full flex-1 flex flex-col h-full">
-            <div className="grid lg:grid-cols-2 gap-10 w-full flex-1 h-full">
-              
-              {/* Left Column */}
-              <div className="flex flex-col flex-1 h-full pb-2">
-                
-                <div className="max-w-2xl flex-1 flex flex-col justify-center py-6 sm:py-10 lg:py-0 lg:-mt-10">
-                  <h2 className="text-4xl sm:text-6xl lg:text-8xl font-bold tracking-tight text-ink-900 text-balance leading-[1.1]">
-                    Build back home.
-                  </h2>
-                  <p className="mt-0 text-2xl sm:text-3xl lg:text-4xl font-caveat text-brand-600 font-medium">
-                    With proof, not promises.
-                  </p>
-                </div>
-
-                <div className="mt-12 lg:mt-auto flex flex-col items-start gap-5">
-                  <Link
-                    href="/projects/new"
-                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-500 to-brand-700 px-6 sm:px-8 py-3.5 sm:py-4 text-sm font-bold text-white shadow-[0_8px_30px_rgb(124,58,237,0.3)] hover:shadow-[0_8px_40px_rgb(124,58,237,0.5)] hover:-translate-y-0.5 transition-all duration-300"
-                  >
-                    START A PROJECT
-                  </Link>
-
-                  {/* Bottom Left Card: Video/Sample Project */}
-                  <div className="flex flex-col sm:flex-row bg-white/90 backdrop-blur-md rounded-lg p-3 sm:p-4 shadow-soft-lg w-full max-w-sm gap-4 items-center ring-1 ring-ink-100">
-                      <div className="relative size-14 sm:size-16 shrink-0 rounded-md overflow-hidden bg-ink-900 flex items-center justify-center text-white cursor-pointer hover:bg-brand-600 transition-colors">
-                        <Image src="/images/modern-home.jpg" fill alt="Sample project" className="object-cover opacity-50" />
-                        <Activity className="size-5 sm:size-6 relative z-10" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-ink-600 leading-relaxed text-balance">
-                          Bankole blends advanced verification and milestone-based escrow — redefining trust in diaspora funding.
-                        </p>
-                      </div>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Right Column */}
-              <div className="hidden lg:flex flex-col items-end justify-between h-full pb-2">
-                
-                {/* Top Right Social Icons */}
-                <div className="flex flex-col gap-4">
-                  <Link href="/dashboard/agents" className="flex size-12 items-center justify-center rounded-full bg-brand-600 text-white shadow-soft hover:scale-110 transition-transform" title="Browse Verified Agents">
-                      <ShieldCheck className="size-5" />
-                  </Link>
-                  <Link href="#" className="flex size-12 items-center justify-center rounded-full bg-white text-ink-900 shadow-soft hover:scale-110 transition-transform" title="How it works">
-                      <LifeBuoy className="size-5" />
-                  </Link>
-                  <Link href="#" className="flex size-12 items-center justify-center rounded-full bg-white text-ink-900 shadow-soft hover:scale-110 transition-transform" title="Global Reach">
-                      <Globe className="size-5" />
-                  </Link>
-                </div>
-
-                {/* Bottom Right Card: Agent profile */}
-                <div className="w-56 mt-auto">
-                  <div className="mb-2">
-                    <p className="text-sm font-bold text-ink-900 text-end flex">Verified Agents</p>
-                    <p className="text-xs text-ink-500 leading-snug mt-1 text-end flex">Powering a new way to fund and build with trust.</p>
-                  </div>
-                  <div className="relative w-full aspect-square rounded-lg overflow-hidden shadow-soft-lg ring-1 ring-ink-100 bg-white">
-                      <Image src="/images/hero-portrait.jpg" fill alt="Agent" className="object-cover object-[center_20%]" />
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Section */}
+      <LandingHero />
 
       {/* Problem */}
       <AnimatedSection>

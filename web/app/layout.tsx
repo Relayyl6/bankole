@@ -1,18 +1,10 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Caveat } from "next/font/google";
 import "./globals.css";
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
-
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
-});
-
-const caveat = Caveat({
-  variable: "--font-caveat-custom",
-  subsets: ["latin"],
-});
+import { AuthProvider } from "@/lib/auth-context";
+import { NotificationProvider } from "@/lib/notification-context";
+import DevRoleSwitcher from "@/components/dev-role-switcher";
 
 export const metadata: Metadata = {
   title: "Bankole: Fund what matters back home, verified every step",
@@ -20,18 +12,22 @@ export const metadata: Metadata = {
     "Bankole is a verified, milestone-based platform that lets diaspora Africans fund infrastructure back home without needing to personally supervise it.",
 };
 
-import { AuthProvider } from "@/lib/auth-context";
-import { NotificationProvider } from "@/lib/notification-context";
-import DevRoleSwitcher from "@/components/dev-role-switcher";
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${jakarta.variable} ${caveat.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+    <html lang="en" className="h-full antialiased">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
         <AuthProvider>
           <NotificationProvider>
             {children}

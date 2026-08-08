@@ -146,7 +146,7 @@ export default function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
 
       {/* Upload Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/40 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 sm:pt-14 md:pt-16 overflow-y-auto bg-ink-900/40 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-ink-100">
             <h3 className="text-xl font-bold text-ink-900 mb-1">Upload Document</h3>
             <p className="text-sm text-ink-500 mb-6">Attach a verified document to this project workspace.</p>

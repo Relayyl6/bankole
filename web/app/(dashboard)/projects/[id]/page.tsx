@@ -2,7 +2,7 @@
 
 import { useState, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Clock, MapPin, FlagTriangleRight, FileText, CheckCircle2, AlertTriangle, MessageSquare, Star, UserMinus, UserPlus, Activity } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, FlagTriangleRight, FileText, CheckCircle2, AlertTriangle, MessageSquare, Star, UserMinus, UserPlus, Activity, ShieldCheck, Send, Wallet, Plus, Zap } from "lucide-react";
 import StatusPill from "@/components/status-pill";
 import ProgressProofCard from "@/components/progress-proof-card";
 import { useAuth } from "@/lib/auth-context";
@@ -17,11 +17,14 @@ import AssignAgentModal from "@/components/assign-agent-modal";
 import ProjectDocuments from "@/components/project-documents";
 import ProjectChat from "@/components/project-chat";
 import ProjectProposals from "@/components/project-proposals";
+import SendFundsModal from "@/components/send-funds-modal";
+import { useWallet } from "@/lib/wallet";
 import { Building2 } from "lucide-react";
+import { isProjectAssignedToAgent, ProjectStorage } from "@/lib/projects";
 
 type ProjectTab = "milestones" | "proposals" | "documents" | "messages";
 
-export default function MilestonesPage({
+export default function ProjectWorkspacePage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -29,17 +32,21 @@ export default function MilestonesPage({
   const resolvedParams = use(params);
   const projectId = resolvedParams.id;
   
-  const { data: project, mutate: mutateProject } = useSWR(`/projects/${projectId}`, (url) => apiClient<Project>(url));
-  const { data: milestones, mutate: mutateMilestones } = useSWR(`/projects/${projectId}/milestones`, (url) => apiClient<Milestone[]>(url));
-  const { data: proofsResponse, mutate: mutateProofs } = useSWR(`/projects/${projectId}/proofs`, (url) => apiClient<{data: ProgressProof[]}>(url));
+  const { data: apiProject, mutate: mutateProject } = useSWR(`/projects/${projectId}`, (url) => apiClient<Project>(url).catch(() => null));
+  const { data: milestones, mutate: mutateMilestones } = useSWR(`/projects/${projectId}/milestones`, (url) => apiClient<Milestone[]>(url).catch(() => []));
+  const { data: proofsResponse, mutate: mutateProofs } = useSWR(`/projects/${projectId}/proofs`, (url) => apiClient<{data: ProgressProof[]}>(url).catch(() => ({ data: [] })));
   
+  const localProject = ProjectStorage.getCreatedProjects().find(p => p.id === projectId);
+  const project = apiProject || localProject;
+
   const proofs = proofsResponse?.data || [];
   const { role, user } = useAuth();
+  const { balance } = useWallet(user?.id, user?.fullName, (user as any)?.agentDetails?.id);
 
   const isUnassigned = project ? (project.status === "agent_unassigned" || !project.agent) : false;
   
   // Calculate if the current user is the assigned agent
-  const isAssignedAgent = project?.agentId === user?.id || (project as any)?.agent_id === user?.id || project?.agent?.id === user?.id;
+  const isAssignedAgent = isProjectAssignedToAgent(project, user);
   const canAccessChat = role === "sender" || (role === "agent" && isAssignedAgent);
 
   const [activeTab, setActiveTab] = useState<ProjectTab>(isUnassigned ? "proposals" : "milestones");
@@ -47,6 +54,7 @@ export default function MilestonesPage({
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showUnassignModal, setShowUnassignModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showSendFundsModal, setShowSendFundsModal] = useState(false);
 
   if (!project || !milestones) {
     return <div className="p-10 text-center animate-pulse">Loading...</div>;
@@ -65,7 +73,7 @@ export default function MilestonesPage({
       <div className="mb-8 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-ink-900 tracking-tight flex items-center gap-3">
-            Project Workspace
+            {project.name || "Project Workspace"}
             {isUnassigned && (
               <span className="inline-flex px-2.5 py-1 bg-amber-50 text-amber-700 text-xs rounded-lg border border-amber-200 font-bold">
                 Open for Proposals
@@ -73,6 +81,30 @@ export default function MilestonesPage({
             )}
           </h1>
           <p className="text-sm font-medium text-ink-500 mt-1">Review flagged concerns, uploaded documents, proposals, and detailed progress reports.</p>
+
+          {/* Assigned agent card */}
+          {project.agent && (
+            <Link
+              href={`/agents/${project.agent.id}`}
+              className="mt-3 inline-flex items-center gap-3 px-4 py-2.5 rounded-xl bg-ink-50 border border-ink-100 hover:bg-brand-50 hover:border-brand-200 transition-colors group w-fit"
+            >
+              <div className="size-8 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-black shrink-0">
+                {project.agent.initials || project.agent.name?.split(" ").map((n: string) => n[0]).join("").slice(0,2).toUpperCase()}
+              </div>
+              <div>
+                <p className="text-xs font-bold text-ink-500 uppercase tracking-wider">Assigned Agent</p>
+                <p className="text-sm font-bold text-ink-900 group-hover:text-brand-700 transition-colors flex items-center gap-1.5">
+                  {project.agent.name}
+                  {project.agent.verified && (
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-brand-600 bg-brand-50 border border-brand-200 px-1.5 py-0.5 rounded-md">
+                      <ShieldCheck className="size-3" /> Verified
+                    </span>
+                  )}
+                </p>
+              </div>
+              <CheckCircle2 className="size-4 text-ink-300 group-hover:text-brand-600 transition-colors ml-auto" />
+            </Link>
+          )}
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
@@ -85,8 +117,15 @@ export default function MilestonesPage({
           </Link>
           {role === "sender" && (
             <>
-              {!isUnassigned ? (
+              {!isUnassigned && project.agent ? (
                 <>
+                  <button 
+                    onClick={() => setShowSendFundsModal(true)}
+                    className="inline-flex items-center gap-2 bg-emerald-600 border border-emerald-700 text-white font-bold px-4 py-2 rounded-xl hover:bg-emerald-700 transition-all shadow-sm hover:scale-[1.02]"
+                  >
+                    <Send className="size-4" />
+                    Send Funds to Agent
+                  </button>
                   <button 
                     onClick={() => setShowUnassignModal(true)}
                     className="inline-flex items-center gap-2 bg-white border border-rose-200 text-rose-700 font-bold px-4 py-2 rounded-xl hover:bg-rose-50 transition-colors shadow-sm"
@@ -117,6 +156,20 @@ export default function MilestonesPage({
       </div>
 
       <AnimatePresence>
+        {showSendFundsModal && (project.agent || project.agentId) && (
+          <SendFundsModal
+            agentId={project.agent?.id || (project.agentId as string)}
+            agentName={project.agent?.name || "Assigned Agent"}
+            projectId={project.id}
+            projectName={project.name}
+            onClose={() => setShowSendFundsModal(false)}
+            onSuccess={() => {
+              mutateProject();
+              mutateMilestones();
+            }}
+          />
+        )}
+
         {showReviewModal && project.agent && (
           <ReviewAgentModal
             agentId={project.agent.id}

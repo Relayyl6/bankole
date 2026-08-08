@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ShieldCheck, ArrowRight, Loader2, CheckCircle2, ChevronLeft, MapPin, User, Building } from "lucide-react";
 import { registerSchema, Role, type RegisterInput } from "@/lib/schemas";
+import { ASSET_TYPE_LABEL } from "@/lib/models";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "react-toastify";
 import { apiClient, TokenManager } from "@/lib/api-client";
@@ -373,20 +374,20 @@ export default function RegisterPage() {
                     <div>
                       <label className="block text-sm font-bold text-ink-700 mb-2">Specialties</label>
                       <div className="flex flex-wrap gap-2">
-                        {["Residential", "Commercial", "Healthcare", "Infrastructure"].map(spec => {
-                          const isSelected = (watch("specialties") || []).includes(spec);
+                        {(Object.entries(ASSET_TYPE_LABEL) as [string, string][]).map(([value, label]) => {
+                          const isSelected = (watch("specialties") || []).includes(value);
                           return (
                             <button 
-                              key={spec} 
+                              key={value} 
                               type="button" 
-                              onClick={() => toggleSpecialty(spec)}
+                              onClick={() => toggleSpecialty(value)}
                               className={`px-3 py-1.5 rounded-2xl border text-sm font-medium transition-colors ${
                                 isSelected 
                                   ? "bg-brand-50 border-brand-500 text-brand-700" 
                                   : "border-ink-200 text-ink-600 hover:border-brand-500 hover:text-brand-600 focus:bg-brand-50 focus:border-brand-500 focus:text-brand-700"
                               }`}
                             >
-                              {spec}
+                              {label}
                             </button>
                           );
                         })}

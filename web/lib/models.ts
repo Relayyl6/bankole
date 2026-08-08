@@ -156,6 +156,8 @@ export interface Project {
   assetType: AssetType;
   location: string | { label: string; lat: number; lng: number };
   agentId?: string | null;
+  agentName?: string;
+  agentEmail?: string;
   agent?: { id: string; name: string; initials: string; verified: boolean };
   currency?: string;
   totalBudget: number;

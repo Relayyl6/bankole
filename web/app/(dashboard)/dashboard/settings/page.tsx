@@ -28,7 +28,7 @@ function PasswordModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 sm:pt-14 md:pt-16 overflow-y-auto bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-xl p-8 relative w-full max-w-sm">
         <button onClick={onClose} className="absolute top-4 right-4"><X className="size-5 text-ink-500" /></button>
         <h2 className="text-xl font-bold mb-4 text-ink-900">Update Password</h2>
@@ -105,7 +105,7 @@ function TwoFactorModal({ onClose, onVerified }: { onClose: () => void; onVerifi
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 sm:pt-14 md:pt-16 overflow-y-auto bg-black/50 backdrop-blur-sm"
     >
       <div className="bg-white rounded-3xl p-6 sm:p-8 relative w-full max-w-md shadow-2xl border border-ink-100">
         <button

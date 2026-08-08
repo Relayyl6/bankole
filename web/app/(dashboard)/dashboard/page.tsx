@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  Search, Bell, Mail, LayoutDashboard, FolderKanban, Users, Settings, 
-  HelpCircle, LogOut, Plus, UploadCloud, TrendingUp, ArrowUpRight,
-  Camera, Banknote, ShieldCheck, X
+  Bell, Mail, LayoutDashboard, FolderKanban, Users, Settings, 
+  HelpCircle, LogOut, Plus, TrendingUp, ArrowUpRight,
+  Camera, Banknote, ShieldCheck, X, Rocket, Building2, ArrowRight
 } from "lucide-react";
 import { ASSET_TYPE_LABEL, PROJECT_STATUS_LABEL, formatCurrency, type Project } from "@/lib/models";
 import { PROJECT_STATUS_TONE } from "@/lib/status";
@@ -15,16 +15,17 @@ import { toast } from "react-toastify";
 import useSWR from "swr";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
+import { useWallet } from "@/lib/wallet";
+import { useProjects } from "@/lib/projects";
 
 export default function DashboardPage() {
   const [activeModal, setActiveModal] = useState<"total" | "active" | "escrow" | "review" | null>(null);
 
   const { data: summary } = useSWR("/dashboard/summary", (url) => apiClient(url));
-  const { data: projectsResponse } = useSWR("/projects", (url) => apiClient<{data: Project[]}>(url));
-
-  const { role } = useAuth()
+  const { role, user } = useAuth();
+  const { userProjects: projects } = useProjects(role, user);
+  const { balance: walletBalance } = useWallet(user?.id, user?.fullName, (user as any)?.agentDetails?.id);
   
-  const projects = projectsResponse?.data || [];
   const activeProjects = projects.filter(p => p.status !== "completed");
   
   const activeProjectsCount = activeProjects.length;
@@ -43,23 +44,28 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-ink-900 tracking-tight">Dashboard</h1>
-              <p className="text-sm text-ink-500 mt-1 font-medium">Plan, prioritize, and manage your builds with ease.</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-brand-600 mb-1">
+                {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
+              </p>
+              <h1 className="text-3xl font-black text-ink-900 tracking-tight">
+                {user?.fullName ? `Welcome back, ${user.fullName.split(" ")[0]} 👋` : "Dashboard"}
+              </h1>
+              <p className="text-sm text-ink-500 mt-1 font-medium">
+                {role === "sender"
+                  ? "Here's what's happening across your projects today."
+                  : "Here's your performance and assigned project overview."}
+              </p>
             </div>
             <div className="flex items-center gap-3">
-              <button className="inline-flex items-center gap-2 rounded-full bg-white border border-ink-200 px-5 py-2.5 text-sm font-bold text-ink-700 shadow-sm hover:bg-ink-50 transition-colors">
-                <UploadCloud className="size-4" />
-                Import Data
-              </button>
               {role === "sender" ? (
                 <Link
                   href="/projects/new"
                   className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white shadow-soft hover:bg-brand-700 hover:-translate-y-0.5 transition-all"
                 >
                   <Plus className="size-4" />
-                  Add Project
+                  Start a Project
                 </Link>
-              ): (
+              ) : (
                 <Link
                   href="/dashboard/marketplace"
                   className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white shadow-soft hover:bg-brand-700 hover:-translate-y-0.5 transition-all"
@@ -70,6 +76,69 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
+
+          {/* Zero-state onboarding card for new users */}
+          {projects.length === 0 && (
+            <div className="mb-8 rounded-2xl overflow-hidden border border-brand-100 bg-gradient-to-br from-brand-50 via-white to-purple-50 shadow-sm">
+              <div className="p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center gap-8">
+                <div className="size-20 shrink-0 rounded-2xl bg-brand-600 flex items-center justify-center shadow-lg">
+                  <Rocket className="size-10 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-black text-ink-900">
+                    {role === "sender"
+                      ? "Build something that lasts 🏗️"
+                      : "Find your first project 🤝"}
+                  </h2>
+                  <p className="mt-2 text-ink-600 text-sm leading-relaxed max-w-xl">
+                    {role === "sender"
+                      ? "Bankole lets you fund construction projects back home — with milestone-locked escrow, geo-tagged proof, and verified agents. Every naira moves only when real work is confirmed."
+                      : "Browse open marketplace projects from diaspora senders. Submit a proposal, get assigned, and manage milestones with full transparency and on-time escrow releases."}
+                  </p>
+                  <div className="mt-6 flex flex-wrap items-center gap-3">
+                    {role === "sender" ? (
+                      <>
+                        <Link
+                          href="/projects/new"
+                          className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white hover:bg-brand-700 transition-all shadow-sm"
+                        >
+                          <Plus className="size-4" /> Start your first project
+                        </Link>
+                        <Link
+                          href="/dashboard/agents"
+                          className="inline-flex items-center gap-2 rounded-full bg-white border border-ink-200 px-6 py-3 text-sm font-bold text-ink-700 hover:bg-ink-50 transition-all"
+                        >
+                          Browse verified agents <ArrowRight className="size-4" />
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          href="/dashboard/marketplace"
+                          className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white hover:bg-brand-700 transition-all shadow-sm"
+                        >
+                          <Building2 className="size-4" /> Browse open projects
+                        </Link>
+                        <Link
+                          href="/profile"
+                          className="inline-flex items-center gap-2 rounded-full bg-white border border-ink-200 px-6 py-3 text-sm font-bold text-ink-700 hover:bg-ink-50 transition-all"
+                        >
+                          Complete your profile <ArrowRight className="size-4" />
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-brand-100 px-8 sm:px-10 py-4 bg-white/60 flex flex-wrap gap-6">
+                {["Milestone-locked escrow", "Geo-tagged proof required", "Identity-verified agents", "Real-time project tracking"].map(f => (
+                  <div key={f} className="flex items-center gap-2 text-xs font-bold text-ink-600">
+                    <ShieldCheck className="size-4 text-brand-600 shrink-0" /> {f}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
@@ -112,14 +181,22 @@ export default function DashboardPage() {
               onClick={() => setActiveModal("escrow")}
               className="rounded-xl bg-white p-6 shadow-sm border border-ink-100 flex flex-col justify-between group hover:shadow-soft transition-shadow cursor-pointer">
                <div className="flex justify-between items-start mb-6">
-                <p className="font-medium text-ink-600">Funds in Escrow</p>
+                <p className="font-medium text-ink-600">
+                  {role === "agent" ? "Available Earnings" : "Funds in Escrow"}
+                </p>
                 <span className="flex size-8 items-center justify-center rounded-full bg-ink-50 text-ink-500 group-hover:bg-brand-50 group-hover:text-brand-600 transition-colors">
                   <ArrowUpRight className="size-4" />
                 </span>
               </div>
-              <h3 className="text-3xl font-black text-ink-900 mb-4 tracking-tight">{formatCurrency(totalInEscrow, currency)}</h3>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-50 text-xs font-medium text-amber-700 w-fit">
-                Pending release
+              <h3 className="text-3xl font-black text-ink-900 mb-4 tracking-tight">
+                {role === "agent" 
+                  ? formatCurrency((walletBalance || 0) + (totalReleased || 0), currency) 
+                  : formatCurrency(totalInEscrow, currency)}
+              </h3>
+              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-medium w-fit ${
+                role === "agent" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+              }`}>
+                {role === "agent" ? "Ready for payout" : "Pending release"}
               </div>
             </div>
 
