@@ -158,7 +158,7 @@ export default function DashboardAgentsPage() {
   const [specialty, setSpecialty] = useState<AssetType | "all">("all");
   const [location, setLocation] = useState<string>("all");
   const [minRating, setMinRating] = useState(0);
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [verifiedOnly, setVerifiedOnly] = useState(true);
   const [sort, setSort] = useState<string>("rating");
   const [page, setPage] = useState(1);
   const perPage = 15;
@@ -368,17 +368,19 @@ export default function DashboardAgentsPage() {
                 className="rounded-full bg-ink-50 px-4 py-2.5 text-sm font-medium text-ink-700 outline-none"
               >
                 <option value={0}>Any rating</option>
-                <option value={4.5}>4.5+ rating</option>
-                <option value={4.8}>4.8+ rating</option>
+                <option value={4.5}>1+ rating</option>
+                <option value={4.8}>2+ rating</option>
+                <option value={4.5}>3+ rating</option>
+                <option value={4.8}>4+ rating</option>
               </select>
               <select
                 value={sort}
                 onChange={(e) => { setSort(e.target.value); setPage(1); }}
                 className="rounded-full bg-ink-50 px-4 py-2.5 text-sm font-medium text-ink-700 outline-none"
               >
-                <option value="rating_desc">Highest Rated</option>
-                <option value="experience_desc">Most Experienced</option>
-                <option value="projects_desc">Most Projects</option>
+                <option value="rating">Highest Rated</option>
+                <option value="experience">Most Experienced</option>
+                <option value="project">Most Projects</option>
               </select>
               <label className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-ink-700 cursor-pointer">
                 <input
@@ -393,7 +395,7 @@ export default function DashboardAgentsPage() {
 
             {/* Premium Data-Dense CRM Table/List Layout */}
             {/* Grid CRM Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 3xl:grid-cols-5 gap-5">
               {filteredAgents.map(agent => (
                 <div key={agent.id} className="bg-white rounded-2xl border border-ink-100 p-4 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-3">

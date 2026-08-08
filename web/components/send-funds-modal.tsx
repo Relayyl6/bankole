@@ -117,20 +117,19 @@ export default function SendFundsModal({
       });
 
       // 3. Attempt backend endpoint sync (graceful if route in progress)
-      try {
-        await apiClient(`/projects/${projectId || agentId}/disbursements`, {
-          method: "POST",
-          body: {
-            agentId,
-            amount,
-            currency: "NGN",
-            purpose: fullPurpose,
-            note: customNote,
-            source: "virtual_wallet",
-          },
-        });
-      } catch {
-        // graceful backend fallback
+      if (projectId) {
+        try {
+          await apiClient(`/projects/${projectId}/send-funds`, {
+            method: "POST",
+            body: {
+              amount,
+              currency: "NGN",
+              note: fullPurpose,
+            },
+          });
+        } catch {
+          // graceful backend fallback
+        }
       }
 
       const generatedRef = `BNK-MOB-${Date.now().toString().slice(-6)}`;

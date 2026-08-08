@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { 
   ShieldCheck, LayoutDashboard, FolderKanban, Users, Settings, 
-  HelpCircle, LogOut, User, Menu, X, CreditCard, PlusCircle, Building2
+  HelpCircle, LogOut, User, Menu, X, CreditCard, PlusCircle, Building2,
+  MessageSquare
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
@@ -135,6 +136,18 @@ export default function DashboardLayout({
             {role === "agent" ? "Agent Directory" : "Agents"}
           </Link>
           <Link 
+            href="/dashboard/messages" 
+            onClick={closeSidebar}
+            className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-colors ${
+              pathname.startsWith("/dashboard/messages") 
+                ? "bg-brand-50 text-brand-700" 
+                : "text-ink-500 hover:bg-ink-50 hover:text-ink-900 font-medium"
+            }`}
+          >
+            <MessageSquare className="size-5" />
+            Messages
+          </Link>
+          <Link 
             href="/dashboard/payments" 
             onClick={closeSidebar}
             className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-colors ${
@@ -249,29 +262,31 @@ export default function DashboardLayout({
         <DashboardTopbar />
         
         <main className="flex-1 overflow-y-auto flex flex-col">
-          <div className="flex-1">
+          <div className={`flex-1 ${pathname.startsWith('/dashboard/messages') ? 'flex flex-col h-full' : ''}`}>
             {children}
           </div>
           
-          <footer className="mx-6 sm:mx-10 mb-6 mt-12 bg-white rounded-xl p-6 sm:px-8 sm:py-6 shadow-sm border border-ink-100 flex flex-col md:flex-row items-center justify-between gap-6 shrink-0">
-            <div className="flex items-center gap-4 text-sm font-medium text-ink-500 text-center md:text-left">
-              <div className="size-10 rounded-xl bg-brand-600 text-white flex items-center justify-center shrink-0 hidden md:flex">
-                <ShieldCheck className="size-6" />
+          {!pathname.startsWith('/dashboard/messages') && (
+            <footer className="mx-6 sm:mx-10 mb-6 mt-12 bg-white rounded-xl p-6 sm:px-8 sm:py-6 shadow-sm border border-ink-100 flex flex-col md:flex-row items-center justify-between gap-6 shrink-0">
+              <div className="flex items-center gap-4 text-sm font-medium text-ink-500 text-center md:text-left">
+                <div className="size-10 rounded-xl bg-brand-600 text-white flex items-center justify-center shrink-0 hidden md:flex">
+                  <ShieldCheck className="size-6" />
+                </div>
+                <p>
+                  &copy; 2026 Bankole. Verified people, milestone-locked funds,<br className="hidden md:block"/>
+                  independent proof of progress.
+                </p>
               </div>
-              <p>
-                &copy; 2026 Bankole. Verified people, milestone-locked funds,<br className="hidden md:block"/>
-                independent proof of progress.
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-6 text-sm font-bold text-ink-600">
-              <Link href="/dashboard" className="hover:text-ink-900 transition-colors">Dashboard</Link>
-              <Link href="/dashboard/agents" className="hover:text-ink-900 transition-colors">Verified agents</Link>
-              {role !== "agent" && (
-                <Link href="/projects/new" className="hover:text-ink-900 transition-colors">Start a project</Link>
-              )}
-            </div>
-          </footer>
+              
+              <div className="flex items-center gap-6 text-sm font-bold text-ink-600">
+                <Link href="/dashboard" className="hover:text-ink-900 transition-colors">Dashboard</Link>
+                <Link href="/dashboard/agents" className="hover:text-ink-900 transition-colors">Verified agents</Link>
+                {role !== "agent" && (
+                  <Link href="/projects/new" className="hover:text-ink-900 transition-colors">Start a project</Link>
+                )}
+              </div>
+            </footer>
+          )}
         </main>
       </div>
     </div>

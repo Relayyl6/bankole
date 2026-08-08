@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { apiClient } from "@/lib/api-client";
+import { ProjectStorage } from "@/lib/projects";
+import { type ProgressProof } from "@/lib/models";
 
 interface UploadedFile {
   id: string;
@@ -20,6 +22,7 @@ interface UploadedFile {
 interface UploadProofModalProps {
   milestoneId: string;
   milestoneStage: string;
+  projectId?: string;
   onClose: () => void;
   onSuccess: (files: UploadedFile[]) => void;
 }
@@ -33,6 +36,7 @@ function getFileType(file: File): "image" | "video" | "document" {
 export default function UploadProofModal({
   milestoneId,
   milestoneStage,
+  projectId,
   onClose,
   onSuccess,
 }: UploadProofModalProps) {
@@ -116,7 +120,7 @@ export default function UploadProofModal({
 
     setSubmitting(true);
     try {
-      const promises = files.map((f) => {
+      const promises = files.map(async (f) => {
         const formData = new FormData();
         formData.append("file", f.file);
         formData.append("caption", f.caption);
@@ -125,10 +129,11 @@ export default function UploadProofModal({
           formData.append("capturedLng", gpsCoords.lng.toString());
         }
         
-        return apiClient(`/milestones/${milestoneId}/proofs`, {
+        const apiProof = await apiClient(`/milestones/${milestoneId}/proofs`, {
           method: "POST",
           body: formData,
         });
+        return apiProof;
       });
 
       await Promise.all(promises);

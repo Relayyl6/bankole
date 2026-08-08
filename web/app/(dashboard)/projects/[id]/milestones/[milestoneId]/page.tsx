@@ -41,7 +41,13 @@ export default function MilestoneDetailPage({
   const project = apiProject || localProject;
 
   const { data: allMilestones, mutate: mutateMilestones, isLoading: isMilestonesLoading } = useSWR(`/projects/${id}/milestones`, (url) => apiClient<Milestone[]>(url).catch(() => []));
-  const { data: proofsResponse, mutate: mutateProofs } = useSWR(`/projects/${id}/proofs`, (url) => apiClient<{data: ProgressProof[]}>(url).catch(() => ({ data: [] })));
+  const { data: proofsResponse, mutate: mutateProofs } = useSWR(
+    `/projects/${id}/proofs`, 
+    (url) => apiClient<{data: ProgressProof[]}>(url).catch(() => ({ data: [] })),
+    {
+      refreshInterval: 3000, // Poll every 3 seconds so the AI verdict seamlessly appears!
+    }
+  );
   
   const milestones = allMilestones || [];
   const localProofs = (proofsResponse?.data || []).filter(p => p.milestoneId === milestoneId);
@@ -551,18 +557,87 @@ export default function MilestoneDetailPage({
                             {new Date(proof.capturedAt || proof.uploadedAt || proof.timestamp || Date.now()).toLocaleString("en-GB")}
                           </span>
                         </div>
-                        {(proof.locationVerified || proof.verification?.verdict === 'verified_on_site' || proof.verification?.withinSiteRadius) && (
-                          <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-mint-600 bg-mint-50 px-2.5 py-1 rounded-xl">
-                            <CheckCircle2 className="size-3.5" /> GPS Location Verified against site coordinates
+                        {/* AI Verification Report */}
+                        {proof.verification ? (
+                          <div className={`mt-5 border rounded-xl overflow-hidden ${
+                            proof.verification.riskLevel === 'high' ? 'border-rose-200 bg-rose-50/50' : 
+                            proof.verification.riskLevel === 'medium' || proof.verification.riskLevel === 'unverifiable' ? 'border-amber-200 bg-amber-50/50' : 
+                            'border-mint-200 bg-mint-50/50'
+                          }`}>
+                            <div className={`px-4 py-3 flex items-start gap-3 border-b ${
+                              proof.verification.riskLevel === 'high' ? 'border-rose-100 bg-rose-50' : 
+                              proof.verification.riskLevel === 'medium' || proof.verification.riskLevel === 'unverifiable' ? 'border-amber-100 bg-amber-50' : 
+                              'border-mint-100 bg-mint-50'
+                            }`}>
+                              {proof.verification.riskLevel === 'high' ? (
+                                <AlertTriangle className="size-5 text-rose-500 shrink-0 mt-0.5" />
+                              ) : proof.verification.riskLevel === 'medium' || proof.verification.riskLevel === 'unverifiable' ? (
+                                <AlertTriangle className="size-5 text-amber-500 shrink-0 mt-0.5" />
+                              ) : (
+                                <ShieldCheck className="size-5 text-mint-500 shrink-0 mt-0.5" />
+                              )}
+                              <div>
+                                <h5 className={`font-bold text-sm ${
+                                  proof.verification.riskLevel === 'high' ? 'text-rose-900' : 
+                                  proof.verification.riskLevel === 'medium' || proof.verification.riskLevel === 'unverifiable' ? 'text-amber-900' : 
+                                  'text-mint-900'
+                                }`}>
+                                  AI Verification Report 
+                                  <span className="ml-2 uppercase text-[10px] tracking-wider px-1.5 py-0.5 rounded bg-white/50 border border-current opacity-80">
+                                    Risk: {proof.verification.riskLevel}
+                                  </span>
+                                </h5>
+                                <p className={`text-xs mt-1 leading-relaxed ${
+                                  proof.verification.riskLevel === 'high' ? 'text-rose-800' : 
+                                  proof.verification.riskLevel === 'medium' || proof.verification.riskLevel === 'unverifiable' ? 'text-amber-800' : 
+                                  'text-mint-800'
+                                }`}>
+                                  {proof.verification.summary}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {proof.verification.checks && proof.verification.checks.length > 0 && (
+                              <div className="px-4 py-3 bg-white">
+                                <ul className="space-y-2">
+                                  {proof.verification.checks.map((check: any, idx: number) => (
+                                    <li key={idx} className="flex items-start gap-2 text-xs">
+                                      {check.result === 'pass' ? (
+                                        <CheckCircle2 className="size-4 text-mint-500 shrink-0 mt-0.5" />
+                                      ) : check.result === 'fail' ? (
+                                        <X className="size-4 text-rose-500 shrink-0 mt-0.5" />
+                                      ) : (
+                                        <div className="size-4 rounded-full bg-ink-200 flex items-center justify-center shrink-0 mt-0.5">
+                                          <div className="w-2 h-0.5 bg-ink-500 rounded-full" />
+                                        </div>
+                                      )}
+                                      <div>
+                                        <span className="font-bold text-ink-700 capitalize">{check.id}: </span>
+                                        <span className="text-ink-600">{check.detail}</span>
+                                      </div>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
                           </div>
+                        ) : (
+                          // Fallback for proofs without AI verification yet
+                          <>
+                            {proof.locationVerified && (
+                              <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-mint-600 bg-mint-50 px-2.5 py-1 rounded-xl">
+                                <CheckCircle2 className="size-3.5" /> GPS Location Verified
+                              </div>
+                            )}
+                          </>
                         )}
 
-                        {proof.status === 'flagged' && (proof.flagReason || proof.verification?.summary) && (
+                        {proof.status === 'flagged' && proof.flagReason && (
                           <div className="mt-4 p-3 bg-rose-50 border border-rose-100 rounded-xl text-sm flex gap-2 items-start text-rose-900">
                             <AlertTriangle className="size-4 text-rose-500 shrink-0 mt-0.5" />
                             <div>
-                              <span className="font-bold block mb-0.5">Concern Flagged:</span>
-                              {proof.flagReason || proof.verification?.summary}
+                              <span className="font-bold block mb-0.5">Sender's Feedback:</span>
+                              {proof.flagReason}
                             </div>
                           </div>
                         )}

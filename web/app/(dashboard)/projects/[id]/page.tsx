@@ -381,6 +381,7 @@ export default function ProjectWorkspacePage({
       <AnimatePresence>
         {uploadMilestone && (
           <UploadProofModal
+            projectId={projectId}
             milestoneId={uploadMilestone.id}
             milestoneStage={uploadMilestone.stage}
             onClose={() => setUploadMilestone(null)}
