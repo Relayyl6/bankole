@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/lib/mock-data";
+import { formatCurrency } from "@/lib/models";
 
 export default function BudgetBar({
   totalBudget,

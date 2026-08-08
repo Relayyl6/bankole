@@ -17,7 +17,7 @@ export default function StatusPill({
 }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${TONES[tone]}`}
+      className={`inline-flex items-center rounded-xl px-2.5 py-1 text-xs font-semibold ${TONES[tone]}`}
     >
       {label}
     </span>

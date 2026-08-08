@@ -1,11 +1,13 @@
 import type { StatusTone } from "@/components/status-pill";
-import type { MilestoneStatus, ProjectStatus } from "@/lib/mock-data";
+import type { MilestoneStatus, ProjectStatus } from "@/lib/models";
 
 export const PROJECT_STATUS_TONE: Record<ProjectStatus, StatusTone> = {
   on_track: "success",
   awaiting_review: "brand",
   attention_needed: "danger",
   completed: "neutral",
+  dispute: "danger",
+  agent_unassigned: "warning",
 };
 
 export const MILESTONE_STATUS_TONE: Record<MilestoneStatus, StatusTone> = {

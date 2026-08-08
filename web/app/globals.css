@@ -1,16 +1,105 @@
 @import "tailwindcss";
 
+/* ─── Light mode (default) ───────────────────────────────────── */
 :root {
-  --background: #faf9f7;
-  --foreground: #17141f;
+  --background: #f5f5f5;
+  --foreground: #171717;
+
+  /* Canvas */
+  --color-canvas:        #ffffff;
+  --color-canvas-soft:   #fafafa;
+  --color-canvas-soft-2: #f5f5f5;
+
+  /* Ink / text */
+  --color-ink:    #171717;
+  --color-body:   #4d4d4d;
+  --color-mute:   #888888;
+  --color-link:   #7c3aed;
+
+  /* Borders */
+  --color-hairline:        #ebebeb;
+  --color-hairline-strong: #a1a1a1;
+
+  /* Status */
+  --color-success: #16a34a;
+  --color-error:   #dc2626;
+  --color-warning: #d97706;
+
+  /* Cards / surfaces */
+  --color-surface:       #ffffff;
+  --color-surface-hover: #f5f5f5;
+
+  /* Shadows */
+  --shadow-card:    0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+  --shadow-card-lg: 0 4px 12px rgba(0,0,0,.06), 0 16px 40px rgba(0,0,0,.10);
+}
+
+/* ─── Dark mode (auto via system preference) ─────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+
+    --color-canvas:        #111111;
+    --color-canvas-soft:   #1a1a1a;
+    --color-canvas-soft-2: #222222;
+
+    --color-ink:    #ededed;
+    --color-body:   #a1a1a1;
+    --color-mute:   #666666;
+    --color-link:   #a78bfa;
+
+    --color-hairline:        #2e2e2e;
+    --color-hairline-strong: #444444;
+
+    --color-success: #4ade80;
+    --color-error:   #f87171;
+    --color-warning: #fbbf24;
+
+    --color-surface:       #111111;
+    --color-surface-hover: #1f1f1f;
+
+    --shadow-card:    0 1px 3px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.3);
+    --shadow-card-lg: 0 4px 12px rgba(0,0,0,.3), 0 16px 40px rgba(0,0,0,.4);
+  }
+}
+
+/* ─── Force light mode for marketing pages ───────────────────── */
+.light-theme,
+.light-theme * {
+  color-scheme: light;
+}
+.light-theme {
+  --background: #f5f5f5;
+  --foreground: #171717;
+  --color-canvas:        #ffffff;
+  --color-canvas-soft:   #fafafa;
+  --color-canvas-soft-2: #f5f5f5;
+  --color-ink:    #171717;
+  --color-body:   #4d4d4d;
+  --color-mute:   #888888;
+  --color-link:   #7c3aed;
+  --color-hairline:        #ebebeb;
+  --color-hairline-strong: #a1a1a1;
+  --color-success: #16a34a;
+  --color-error:   #dc2626;
+  --color-warning: #d97706;
+  --color-surface:       #ffffff;
+  --color-surface-hover: #f5f5f5;
+  --shadow-card:    0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+  --shadow-card-lg: 0 4px 12px rgba(0,0,0,.06), 0 16px 40px rgba(0,0,0,.10);
+  background: #f5f5f5;
+  color: #171717;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-jakarta);
+  --font-caveat: var(--font-caveat-custom);
 
-  --color-brand-50: #f5f3ff;
+  /* Brand (violet) */
+  --color-brand-50:  #f5f3ff;
   --color-brand-100: #ede9fe;
   --color-brand-200: #ddd6fe;
   --color-brand-300: #c4b5fd;
@@ -21,7 +110,8 @@
   --color-brand-800: #5b21b6;
   --color-brand-900: #4c1d95;
 
-  --color-ink-50: #f7f7f8;
+  /* Ink scale (still used for direct Tailwind classes) */
+  --color-ink-50:  #f7f7f8;
   --color-ink-100: #eeedf1;
   --color-ink-200: #d9d7e0;
   --color-ink-300: #b6b2c2;
@@ -32,6 +122,14 @@
   --color-ink-800: #2c2738;
   --color-ink-900: #17141f;
 
+  /* Semantic aliases (these adapt to dark mode) */
+  --color-canvas:        var(--color-canvas);
+  --color-canvas-soft:   var(--color-canvas-soft);
+  --color-surface:       var(--color-surface);
+  --color-surface-hover: var(--color-surface-hover);
+  --color-border:        var(--color-hairline);
+
+  /* Status */
   --color-mint-500: #16a34a;
   --color-mint-100: #dcfce7;
   --color-amber-500: #d97706;
@@ -39,12 +137,43 @@
   --color-rose-500: #dc2626;
   --color-rose-100: #fee2e2;
 
-  --shadow-soft: 0 1px 2px rgba(23, 20, 31, 0.04), 0 8px 24px rgba(23, 20, 31, 0.06);
-  --shadow-soft-lg: 0 4px 12px rgba(23, 20, 31, 0.06), 0 16px 40px rgba(23, 20, 31, 0.10);
+  --shadow-soft:    var(--shadow-card);
+  --shadow-soft-lg: var(--shadow-card-lg);
+}
+
+html {
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ─── Semantic helper classes (dark-mode aware) ──────────────── */
+.bg-canvas        { background: var(--color-canvas); }
+.bg-canvas-soft   { background: var(--color-canvas-soft); }
+.bg-surface       { background: var(--color-surface); }
+.text-body        { color: var(--color-body); }
+.text-muted       { color: var(--color-mute); }
+.border-hairline  { border-color: var(--color-hairline); }
+.shadow-card      { box-shadow: var(--shadow-card); }
+.shadow-card-lg   { box-shadow: var(--shadow-card-lg); }
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

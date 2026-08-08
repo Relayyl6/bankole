@@ -1,4 +1,4 @@
-import type { Milestone, Project } from "@/lib/mock-data";
+import type { Milestone, Project } from "@/lib/models";
 
 /**
  * Projects created through the guided flow, held in the browser.
