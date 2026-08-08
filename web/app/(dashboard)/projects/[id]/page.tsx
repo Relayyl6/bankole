@@ -2,7 +2,7 @@
 
 import { useState, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Clock, MapPin, FlagTriangleRight, FileText, CheckCircle2, AlertTriangle, MessageSquare, Star, UserMinus, UserPlus, Activity, ShieldCheck, Send, Wallet, Plus, Zap } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, FlagTriangleRight, FileText, CheckCircle2, AlertTriangle, MessageSquare, Star, UserMinus, UserPlus, Activity, ShieldCheck, Send, Wallet, Plus, Zap, UploadCloud, ChevronRight } from "lucide-react";
 import StatusPill from "@/components/status-pill";
 import ProgressProofCard from "@/components/progress-proof-card";
 import { useAuth } from "@/lib/auth-context";
@@ -18,6 +18,7 @@ import ProjectDocuments from "@/components/project-documents";
 import ProjectChat from "@/components/project-chat";
 import ProjectProposals from "@/components/project-proposals";
 import SendFundsModal from "@/components/send-funds-modal";
+import UploadProofModal from "@/components/upload-proof-modal";
 import { useWallet } from "@/lib/wallet";
 import { Building2 } from "lucide-react";
 import { isProjectAssignedToAgent, ProjectStorage } from "@/lib/projects";
@@ -55,6 +56,7 @@ export default function ProjectWorkspacePage({
   const [showUnassignModal, setShowUnassignModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showSendFundsModal, setShowSendFundsModal] = useState(false);
+  const [uploadMilestone, setUploadMilestone] = useState<Milestone | null>(null);
 
   if (!project || !milestones) {
     return <div className="p-10 text-center animate-pulse">Loading...</div>;
@@ -320,20 +322,45 @@ export default function ProjectWorkspacePage({
                       </div>
                     </div>
                   </div>
-                  <div className="w-full md:w-64 shrink-0 bg-ink-50 rounded-2xl p-4">
+                  <div className="w-full md:w-64 shrink-0 bg-ink-50 rounded-2xl p-4 flex flex-col">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-ink-500 mb-3">Submissions</h4>
-                    {mProofs.length > 0 ? (
-                      <div className="space-y-3">
-                        {mProofs.map(p => (
-                          <div key={p.id} className="flex items-center justify-between text-sm">
-                            <span className="text-ink-700 font-medium truncate pr-2">{p.caption}</span>
-                            <StatusPill label={p.status === 'flagged' ? 'Flagged' : p.status === 'approved' ? 'Approved' : 'Pending'} tone={p.status === 'flagged' ? 'danger' : p.status === 'approved' ? 'success' : 'brand'} />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-ink-400 italic">No proofs submitted yet</p>
-                    )}
+                    <div className="flex-1">
+                      {mProofs.length > 0 ? (
+                        <div className="space-y-3">
+                          {mProofs.map(p => (
+                            <div key={p.id} className="flex items-center justify-between text-sm">
+                              <span className="text-ink-700 font-medium truncate pr-2">{p.caption}</span>
+                              <StatusPill label={p.status === 'flagged' ? 'Flagged' : p.status === 'approved' ? 'Approved' : 'Pending'} tone={p.status === 'flagged' ? 'danger' : p.status === 'approved' ? 'success' : 'brand'} />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-ink-400 italic mb-4">No proofs submitted yet</p>
+                      )}
+                    </div>
+                    <div className="mt-4 flex flex-col gap-2">
+                      {isAssignedAgent && (
+                        <button 
+                          onClick={() => setUploadMilestone(milestone)}
+                          className="w-full bg-brand-600 text-white rounded-xl py-2 text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-brand-700 transition-colors"
+                        >
+                          <UploadCloud className="size-3.5" /> Upload Proof
+                        </button>
+                      )}
+                      
+                      {role === "sender" && mProofs.some(p => p.status === 'pending_review') ? (
+                        <Link 
+                          href={`/projects/${projectId}/milestones/${milestone.id}`} 
+                          className="w-full bg-ink-900 text-white rounded-xl py-2 text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-ink-800 transition-colors"
+                        >
+                          Review Submissions <ChevronRight className="size-3.5" />
+                        </Link>
+                      ) : (
+                        <Link href={`/projects/${projectId}/milestones/${milestone.id}`} className="block text-center text-xs font-bold text-ink-600 hover:text-brand-600 transition-colors">
+                          View Details &rarr;
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -349,6 +376,22 @@ export default function ProjectWorkspacePage({
       {activeTab === "messages" && canAccessChat && (
         <ProjectChat projectId={projectId} />
       )}
+
+      {/* Modals */}
+      <AnimatePresence>
+        {uploadMilestone && (
+          <UploadProofModal
+            projectId={projectId}
+            milestoneId={uploadMilestone.id}
+            milestoneStage={uploadMilestone.stage}
+            onClose={() => setUploadMilestone(null)}
+            onSuccess={() => {
+              mutateProofs();
+              mutateMilestones();
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

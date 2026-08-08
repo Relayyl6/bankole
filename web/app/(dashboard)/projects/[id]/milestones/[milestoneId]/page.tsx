@@ -36,11 +36,11 @@ export default function MilestoneDetailPage({
   const [showSendFundsModal, setShowSendFundsModal] = useState(false);
   const { addNotification } = useNotifications();
   
-  const { data: apiProject } = useSWR(`/projects/${id}`, (url) => apiClient<Project>(url).catch(() => null));
+  const { data: apiProject, isLoading: isProjectLoading } = useSWR(`/projects/${id}`, (url) => apiClient<Project>(url).catch(() => null));
   const localProject = ProjectStorage.getCreatedProjects().find(p => p.id === id);
   const project = apiProject || localProject;
 
-  const { data: allMilestones, mutate: mutateMilestones } = useSWR(`/projects/${id}/milestones`, (url) => apiClient<Milestone[]>(url).catch(() => []));
+  const { data: allMilestones, mutate: mutateMilestones, isLoading: isMilestonesLoading } = useSWR(`/projects/${id}/milestones`, (url) => apiClient<Milestone[]>(url).catch(() => []));
   const { data: proofsResponse, mutate: mutateProofs } = useSWR(`/projects/${id}/proofs`, (url) => apiClient<{data: ProgressProof[]}>(url).catch(() => ({ data: [] })));
   
   const milestones = allMilestones || [];
@@ -56,6 +56,14 @@ export default function MilestoneDetailPage({
 
   const milestone = milestones.find(m => m.id === milestoneId);
   
+  if (isProjectLoading || isMilestonesLoading) {
+    return (
+      <div className="p-10 flex justify-center items-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
+      </div>
+    );
+  }
+
   if (!project || !milestone) {
     notFound();
   }
