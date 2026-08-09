@@ -79,7 +79,7 @@ const STEPS = [
 
 const MIN_BUDGET = 100_000;
 
-export default function NewProjectFlow() {
+export default function NewProjectFlow({ initialAgentId }: { initialAgentId?: string | null }) {
   const { user } = useAuth();
   const [step, setStep] = useState(0);
 
@@ -89,7 +89,7 @@ export default function NewProjectFlow() {
   const [scope, setScope] = useState("");
   const [budgetInput, setBudgetInput] = useState("");
   const [assignmentMode, setAssignmentMode] = useState<"direct" | "marketplace">("direct");
-  const [agentId, setAgentId] = useState<string | null>(null);
+  const [agentId, setAgentId] = useState<string | null>(initialAgentId || null);
   const [plan, setPlan] = useState<PlannedMilestone[]>([]);
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);

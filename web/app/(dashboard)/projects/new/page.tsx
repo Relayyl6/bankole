@@ -1,12 +1,10 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useSearchParams } from "next/navigation";
 import NewProjectFlow from "@/components/new-project-flow";
 
-export const metadata: Metadata = {
-  title: "Start a project · Bankole",
-  description:
-    "Set the scope, choose a verified agent, and fund a milestone plan held in escrow.",
-};
-
 export default function NewProjectPage() {
-  return <NewProjectFlow />;
+  const searchParams = useSearchParams();
+  const agentId = searchParams.get("agentId");
+  return <NewProjectFlow initialAgentId={agentId} />;
 }

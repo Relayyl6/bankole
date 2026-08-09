@@ -38,7 +38,9 @@ export default function AgentsPage() {
   if (specialty !== "all") queryParams.set("specialty", specialty);
   if (location !== "all") queryParams.set("location", location);
   if (minRating > 0) queryParams.set("minRating", minRating.toString());
-  if (verifiedOnly) queryParams.set("verifiedOnly", "true");
+  // Only filter to verified=true when the checkbox is explicitly checked.
+  // Otherwise pass verifiedOnly=false so ALL agents appear (admin can verify via Supabase).
+  queryParams.set("verifiedOnly", verifiedOnly ? "true" : "false");
   if (sort) queryParams.set("sort", sort);
   queryParams.set("page", page.toString());
   queryParams.set("perPage", perPage.toString());
@@ -160,7 +162,7 @@ export default function AgentsPage() {
             {filtered.map((agent) => (
               <Link 
                 key={agent.id} 
-                href={`/agents/${agent.id}`}
+                href={`/agents/${agent.id}?from=directory`}
                 className="bg-white rounded-2xl p-6 shadow-sm border border-ink-100 hover:shadow-md transition-shadow relative overflow-hidden group block"
               >  <div className="flex items-center gap-3">
                   <Avatar initials={agent.initials} hue={agent.avatarHue} size="lg" />
@@ -170,7 +172,10 @@ export default function AgentsPage() {
                   </div>
                 </div>
                 <div className="mt-4 flex items-center justify-between">
-                  <VerifiedBadge size="sm" />
+                  {agent.verified 
+                    ? <VerifiedBadge size="sm" />
+                    : <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">⏳ Pending Verification</span>
+                  }
                   <span className="inline-flex items-center gap-1 text-sm font-medium text-ink-900">
                     <Star className="size-3.5 text-amber-500" fill="currentColor" strokeWidth={0} />
                     {agent.rating.toFixed(1)}
@@ -203,7 +208,7 @@ export default function AgentsPage() {
             </div>
             <h3 className="text-lg font-bold text-ink-900 mb-1">No agents found</h3>
             <p className="text-sm text-ink-500 max-w-md mb-6">
-              We couldn&apos;t find any verified agents matching your current filter criteria. Try expanding your search or resetting filters.
+              No agents match your current filters. Try resetting or removing some filters.
             </p>
             <button
               onClick={handleResetFilters}

@@ -261,18 +261,40 @@ export default function DashboardAgentsPage() {
   }
 
   const handleOpenChat = async (agentId: string) => {
+    const agent = agents.find(a => (a.id || (a as any).userId || (a as any).user_id) === agentId);
     setActiveChat(agentId);
     const fallbackThreadId = `local_thread_${user?.id || 'sender'}_${agentId}`;
     setThreadId(fallbackThreadId);
     setLocalMessages(getLocalThreadMessages(fallbackThreadId));
 
+    // Write this thread into the shared localStorage index so the Messages page shows it
+    const threadIndex: any[] = (() => {
+      try { return JSON.parse(localStorage.getItem("bankole_dm_threads") || "[]"); } catch { return []; }
+    })();
+    const existingIdx = threadIndex.findIndex((t: any) => t.threadId === fallbackThreadId);
+    const threadEntry = {
+      threadId: fallbackThreadId,
+      participantId: agentId,
+      participantName: agent?.name || "Agent",
+      lastMessage: threadIndex[existingIdx]?.lastMessage || null,
+      updatedAt: new Date().toISOString(),
+    };
+    if (existingIdx >= 0) threadIndex[existingIdx] = { ...threadIndex[existingIdx], ...threadEntry };
+    else threadIndex.unshift(threadEntry);
+    localStorage.setItem("bankole_dm_threads", JSON.stringify(threadIndex));
+
     try {
       const res = await apiClient<{threadId: string}>('/messages/threads', { method: 'POST', body: { agentId } });
       if (res?.threadId) {
         setThreadId(res.threadId);
+        // Update the index entry with the real backend threadId
+        const updatedIdx = threadIndex.map((t: any) => 
+          t.threadId === fallbackThreadId ? { ...t, threadId: res.threadId } : t
+        );
+        localStorage.setItem("bankole_dm_threads", JSON.stringify(updatedIdx));
       }
     } catch {
-      // Backend /messages/threads not found or agent not in DB table; continue seamlessly with local thread
+      // Backend not available; continue seamlessly with local thread
     }
   };
 
@@ -295,6 +317,15 @@ export default function DashboardAgentsPage() {
       const updated = [...current, newMsg];
       localStorage.setItem(`bankole_dm_${threadId}`, JSON.stringify(updated));
       setLocalMessages(updated);
+
+      // Update lastMessage in the shared thread index
+      const threadIndex: any[] = JSON.parse(localStorage.getItem("bankole_dm_threads") || "[]");
+      const idx = threadIndex.findIndex((t: any) => t.threadId === threadId);
+      if (idx >= 0) {
+        threadIndex[idx].lastMessage = body;
+        threadIndex[idx].updatedAt = new Date().toISOString();
+        localStorage.setItem("bankole_dm_threads", JSON.stringify(threadIndex));
+      }
     } catch {}
 
     if (!threadId.startsWith("local_")) {

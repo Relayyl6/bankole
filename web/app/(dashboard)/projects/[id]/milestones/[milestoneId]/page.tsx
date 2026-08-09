@@ -4,7 +4,7 @@ import { use, useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
-import { ArrowLeft, CheckCircle2, AlertTriangle, UploadCloud, MapPin, Clock, Camera, ChevronLeft, ChevronRight, FileText, FileBadge, X } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertTriangle, UploadCloud, MapPin, Clock, Camera, ChevronLeft, ChevronRight, FileText, FileBadge, X, ShieldCheck } from "lucide-react";
 import { 
   MILESTONE_STATUS_LABEL,
   formatCurrency,
