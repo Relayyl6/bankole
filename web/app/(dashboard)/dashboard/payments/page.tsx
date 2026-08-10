@@ -77,7 +77,7 @@ const CARD_GRADIENTS = [
 
 const detectCardType = (num: string): CardType => {
   if (num.startsWith("4")) return "visa";
-  if (num.startsWith("506")) return "afrgo"; // AfriGO prefix
+  if (num.startsWith("562")) return "afrgo"; // AfriGO prefix
   if (num.startsWith("5") || num.startsWith("2")) return "mastercard";
   return "verve";
 };
