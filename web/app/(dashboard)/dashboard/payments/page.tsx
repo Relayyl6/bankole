@@ -82,6 +82,7 @@ const detectCardType = (num: string): CardType => {
   return "verve";
 };
 
+const CARD_LABEL: Record<CardType, string> = {
   visa: "VISA",
   mastercard: "MASTERCARD",
   verve: "VERVE",
