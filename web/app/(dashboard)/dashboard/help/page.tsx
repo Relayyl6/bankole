@@ -28,16 +28,37 @@ export default function HelpSupportPage() {
     show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
+    
+    const form = e.target as HTMLFormElement;
+    const subject = (form.elements[0] as HTMLInputElement).value;
+    const category = (form.elements[1] as HTMLSelectElement).value;
+    const priority = (form.elements[2] as HTMLSelectElement).value;
+    const description = (form.elements[3] as HTMLTextAreaElement).value;
+
+    try {
+      const res = await fetch("/api/help", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, category, priority, description }),
+      });
+
+      const data = await res.json();
+      
+      if (res.ok) {
+        toast.success(data.message);
+        form.reset();
+        setShowAttach(false);
+      } else {
+        toast.error(data.message || "Something went wrong.");
+      }
+    } catch (error) {
+      toast.error("Failed to submit ticket. Please try again.");
+    } finally {
       setIsSubmitting(false);
-      toast.success("Ticket submitted successfully! We'll be in touch soon.");
-      (e.target as HTMLFormElement).reset();
-      setShowAttach(false);
-    }, 1200);
+    }
   };
 
   return (

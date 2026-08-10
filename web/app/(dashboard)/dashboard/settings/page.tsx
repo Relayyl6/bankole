@@ -192,6 +192,17 @@ export default function SettingsPage() {
   useEffect(() => {
     if (user) {
       setFullName(user.name || user.fullName || "");
+      if (user.country) setCountry(user.country);
+      if (user.phoneNumber) setPhoneNumber(user.phoneNumber);
+      if (user.timezone) setTimezone(user.timezone);
+      if (user.currencyPreference) setCurrencyPreference(user.currencyPreference);
+      
+      const agentDetails = (user as any).agentDetails;
+      if (agentDetails) {
+        if (agentDetails.companyName) setCompanyName(agentDetails.companyName);
+        if (agentDetails.bio) setBio(agentDetails.bio);
+        if (agentDetails.portfolioUrl) setPortfolioUrl(agentDetails.portfolioUrl);
+      }
     }
   }, [user]);
 
