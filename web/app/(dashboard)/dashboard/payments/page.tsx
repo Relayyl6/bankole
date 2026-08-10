@@ -16,7 +16,7 @@ import { formatCurrency, type Project } from "@/lib/models";
 import { WalletManager, useWallet } from "@/lib/wallet";
 
 // ── Types ────────────────────────────────────────────────────────
-type CardType = "visa" | "mastercard" | "verve";
+type CardType = "visa" | "mastercard" | "verve" | "afrgo";
 
 interface BankAccount {
   id: string;
@@ -77,14 +77,15 @@ const CARD_GRADIENTS = [
 
 const detectCardType = (num: string): CardType => {
   if (num.startsWith("4")) return "visa";
+  if (num.startsWith("506")) return "afrgo"; // AfriGO prefix
   if (num.startsWith("5") || num.startsWith("2")) return "mastercard";
   return "verve";
 };
 
-const CARD_LABEL: Record<CardType, string> = {
   visa: "VISA",
   mastercard: "MASTERCARD",
   verve: "VERVE",
+  afrgo: "AFRIGO",
 };
 
 // ── Add Bank Account Modal ───────────────────────────────────────
@@ -265,7 +266,7 @@ function AddCardModal({ onClose, onAdd }: { onClose: () => void; onAdd: (payload
   const [showCvv, setShowCvv] = useState(false);
 
   const formatNum = (v: string) =>
-    v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+    v.replace(/\D/g, "").slice(0, 19).replace(/(.{4})/g, "$1 ").trim();
 
   const formatExpiry = (v: string) => {
     const d = v.replace(/\D/g, "").slice(0, 4);
@@ -275,7 +276,7 @@ function AddCardModal({ onClose, onAdd }: { onClose: () => void; onAdd: (payload
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const raw = num.replace(/\s/g, "");
-    if (raw.length < 16 || expiry.length < 5 || cvv.length < 3 || !holder) {
+    if (raw.length < 15 || expiry.length < 5 || cvv.length < 3 || !holder) {
       toast.error("Please fill in all card details correctly.");
       return;
     }
