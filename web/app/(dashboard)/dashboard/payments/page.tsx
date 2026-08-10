@@ -486,8 +486,9 @@ function CoFunderModal({ projects, onClose, onInvite }: { projects: Project[]; o
 // ── TopUpModal ───────────────────────────────────────────────────
 const TOP_UP_PRESETS = [5_000, 10_000, 25_000, 50_000, 100_000, 250_000];
 
-function TopUpModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (amount: number) => void }) {
+function TopUpModal({ onClose, onSuccess, cards }: { onClose: () => void; onSuccess: (amount: number) => void; cards: SavedCard[] }) {
   const [amount, setAmount] = useState("");
+  const [selectedCardId, setSelectedCardId] = useState(cards.find(c => c.isDefault)?.id || cards[0]?.id || "");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -495,17 +496,18 @@ function TopUpModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (a
     const val = parseFloat(amount.replace(/,/g, ""));
     if (!val || val <= 0) { toast.error("Enter a valid amount"); return; }
     if (val < 1000) { toast.error("Minimum top-up is ₦1,000"); return; }
+    if (!selectedCardId) { toast.error("Please select a card or link one first."); return; }
     setLoading(true);
     try {
-      // Try real endpoint first — gracefully falls back to simulation
-      await apiClient("/payments/topup", { method: "POST", body: { amount: val, currency: "NGN" } });
-    } catch {
-      // Endpoint doesn't exist yet — simulate locally
+      await apiClient("/payments/topup", { method: "POST", body: { amount: val, currency: "NGN", cardId: selectedCardId } });
+      toast.success("Wallet topped up successfully!");
+      onSuccess(val);
+      onClose();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to top up wallet. Please check your card.");
+    } finally {
+      setLoading(false);
     }
-    // Always optimistically credit the wallet (demo mode)
-    await new Promise(r => setTimeout(r, 800)); // feel real
-    onSuccess(val);
-    setLoading(false);
   };
 
   return (
@@ -575,10 +577,27 @@ function TopUpModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (a
             </div>
           </div>
 
+          {/* Card Selector */}
+          <div>
+            <label className="block text-xs font-bold text-ink-500 uppercase tracking-wider mb-2">Select Payment Method</label>
+            <select 
+              value={selectedCardId}
+              onChange={(e) => setSelectedCardId(e.target.value)}
+              className="w-full px-4 py-3.5 rounded-xl border border-ink-200 text-ink-900 font-medium text-sm focus:ring-2 focus:ring-brand-500 outline-none bg-white"
+            >
+              {cards.length === 0 && <option value="">No cards linked (Add one first)</option>}
+              {cards.map(card => (
+                <option key={card.id} value={card.id}>
+                  {CARD_LABEL[card.type] || 'Card'} ending in {card.last4} {card.isDefault ? '(Default)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
             <Zap className="size-4 text-amber-600 shrink-0 mt-0.5" />
             <p className="text-xs text-amber-800 font-medium">
-              Demo mode: funds are credited instantly to your virtual wallet. In production, this will charge your linked card via Paystack.
+              This will charge your selected card via Paystack and credit your virtual wallet.
             </p>
           </div>
 
@@ -826,7 +845,7 @@ export default function PaymentsPage() {
             <CoFunderModal projects={projects} onClose={() => setShowCoFunder(false)} onInvite={handleInviteCoFunder} />
           )}
           {showTopUp && (
-            <TopUpModal onClose={() => setShowTopUp(false)} onSuccess={handleTopUp} />
+            <TopUpModal onClose={() => setShowTopUp(false)} onSuccess={handleTopUp} cards={cards} />
           )}
         </AnimatePresence>
 

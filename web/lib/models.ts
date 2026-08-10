@@ -163,6 +163,7 @@ export interface Project {
   totalBudget: number;
   fundsReleased: number;
   fundsInEscrow: number;
+  fundingMode?: "upfront" | "milestone";
   supervisionFeePercentage?: number;
   supervisionFeeTotal?: number;
   supervisionFeePaid?: number;

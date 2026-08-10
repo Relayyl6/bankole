@@ -2,7 +2,7 @@
 
 import { useState, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Clock, MapPin, FlagTriangleRight, FileText, CheckCircle2, AlertTriangle, MessageSquare, Star, UserMinus, UserPlus, Activity, ShieldCheck, Send, Wallet, Plus, Zap, UploadCloud, ChevronRight } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, FlagTriangleRight, FileText, CheckCircle2, AlertTriangle, MessageSquare, Star, UserMinus, UserPlus, Activity, ShieldCheck, Send, Wallet, Plus, Zap, UploadCloud, ChevronRight, Lock, Unlock } from "lucide-react";
 import StatusPill from "@/components/status-pill";
 import ProgressProofCard from "@/components/progress-proof-card";
 import { useAuth } from "@/lib/auth-context";
@@ -57,6 +57,17 @@ export default function ProjectWorkspacePage({
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showSendFundsModal, setShowSendFundsModal] = useState(false);
   const [uploadMilestone, setUploadMilestone] = useState<Milestone | null>(null);
+
+  const handleFundMilestone = async (milestoneId: string) => {
+    try {
+      await apiClient(`/milestones/${milestoneId}/fund`, { method: "POST" });
+      toast.success("Milestone funded successfully! The escrow is now locked.");
+      mutateProject();
+      mutateMilestones();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to fund milestone. Please top up your wallet.");
+    }
+  };
 
   if (!project || !milestones) {
     return <div className="p-10 text-center animate-pulse">Loading...</div>;
@@ -319,6 +330,11 @@ export default function ProjectWorkspacePage({
                       <div className="flex flex-wrap gap-3 text-xs font-medium text-ink-500 mt-2">
                         <span className="flex items-center gap-1"><MapPin className="size-3.5" /> Geo-verification required</span>
                         <span className="flex items-center gap-1"><CheckCircle2 className="size-3.5" /> Escrow: {formatCurrency(milestone.escrowAmount, milestone.currency)}</span>
+                        {(milestone as any).is_funded ? (
+                          <span className="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-bold"><Lock className="size-3" /> Funded & Protected</span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md font-bold"><Unlock className="size-3" /> Awaiting Funds</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -339,6 +355,15 @@ export default function ProjectWorkspacePage({
                       )}
                     </div>
                     <div className="mt-4 flex flex-col gap-2">
+                      {role === "sender" && !(milestone as any).is_funded && (
+                        <button 
+                          onClick={() => handleFundMilestone(milestone.id)}
+                          className="w-full bg-brand-600 text-white rounded-xl py-2 text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-brand-700 transition-colors"
+                        >
+                          <Wallet className="size-3.5" /> Fund Milestone
+                        </button>
+                      )}
+
                       {isAssignedAgent && (
                         <button 
                           onClick={() => setUploadMilestone(milestone)}

@@ -89,6 +89,7 @@ export default function NewProjectFlow({ initialAgentId }: { initialAgentId?: st
   const [scope, setScope] = useState("");
   const [budgetInput, setBudgetInput] = useState("");
   const [assignmentMode, setAssignmentMode] = useState<"direct" | "marketplace">("direct");
+  const [fundingMode, setFundingMode] = useState<"upfront" | "milestone">("upfront");
   const [agentId, setAgentId] = useState<string | null>(initialAgentId || null);
   const [plan, setPlan] = useState<PlannedMilestone[]>([]);
   const [createdId, setCreatedId] = useState<string | null>(null);
@@ -227,6 +228,7 @@ export default function NewProjectFlow({ initialAgentId }: { initialAgentId?: st
         },
         currency: "NGN",
         totalBudget: budget,
+        fundingMode,
         supervisionFeePercentage: 10,
         isPublic: assignmentMode === "marketplace",
         scope: scope.trim(),
@@ -269,7 +271,8 @@ export default function NewProjectFlow({ initialAgentId }: { initialAgentId?: st
         location: location!,
         currency: "NGN",
         totalBudget: budget,
-        fundsInEscrow: budget,
+        fundingMode,
+        fundsInEscrow: fundingMode === 'upfront' ? budget : 0,
         fundsReleased: 0,
         supervisionFeePercentage: 10,
         supervisionFeeTotal: Math.round(budget * 0.1),
@@ -716,6 +719,26 @@ export default function NewProjectFlow({ initialAgentId }: { initialAgentId?: st
                       <p className="text-sm text-brand-800 mt-1 leading-relaxed">
                         Funds are held in secure escrow. Milestones release only after you inspect and approve verified, geo-tagged proof of work.
                       </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-ink-50 rounded-2xl p-6 border border-ink-100 mb-8">
+                    <h3 className="font-bold text-ink-900 mb-4">Funding Preference</h3>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <button
+                        onClick={() => setFundingMode("upfront")}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${fundingMode === "upfront" ? "border-brand-600 bg-white shadow-sm" : "border-ink-200 bg-transparent hover:border-brand-300 hover:bg-white/50"}`}
+                      >
+                        <h4 className="font-bold text-ink-900">Fund Entire Project Now</h4>
+                        <p className="text-xs text-ink-500 mt-1">Deducts the full {formatCurrency(budget)} from your wallet immediately so agents can work non-stop.</p>
+                      </button>
+                      <button
+                        onClick={() => setFundingMode("milestone")}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${fundingMode === "milestone" ? "border-brand-600 bg-white shadow-sm" : "border-ink-200 bg-transparent hover:border-brand-300 hover:bg-white/50"}`}
+                      >
+                        <h4 className="font-bold text-ink-900">Fund Milestone-by-Milestone</h4>
+                        <p className="text-xs text-ink-500 mt-1">Pay as you go. You will manually fund each stage right before the agent starts working on it.</p>
+                      </button>
                     </div>
                   </div>
 
